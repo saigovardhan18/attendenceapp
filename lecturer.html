@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lecturer Dashboard</title>
+  <link rel="stylesheet" href="lecturer.css">
+</head>
+<body>
+
+  <!-- ========== LOGIN ========== -->
+  <main class="wrap" id="loginView">
+    <section class="card login-card">
+      <h1>Lecturer Login</h1>
+      <p class="sub">Sign in to view class attendance.</p>
+
+      <form id="loginForm" novalidate>
+        <div class="field">
+          <label for="username">Username</label>
+          <input id="username" type="text" placeholder="Enter your username" autocomplete="username">
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <div class="inputwrap">
+            <input id="password" type="password" placeholder="Enter your password" autocomplete="current-password">
+            <button type="button" class="eye" id="togglePw">Show</button>
+          </div>
+        </div>
+        <p class="error" id="loginError" role="alert"></p>
+        <button type="submit" class="btn" id="loginBtn"><span id="loginLabel">Login</span><span class="spinner"></span></button>
+      </form>
+    </section>
+  </main>
+
+  <!-- ========== DASHBOARD ========== -->
+  <div class="dash" id="dashView" hidden>
+    <header class="topbar">
+      <div>
+        <h1>Attendance Dashboard</h1>
+        <p class="sub" id="todayLabel"></p>
+      </div>
+      <button type="button" class="ghost" id="logoutBtn">Log out</button>
+    </header>
+
+    <section class="stats">
+      <div class="stat"><span>Total Students</span><strong id="statStudents">63</strong></div>
+      <div class="stat"><span>Total Records</span><strong id="statTotal">–</strong></div>
+      <div class="stat green"><span>Present Today</span><strong id="statToday">–</strong></div>
+    </section>
+
+    <section class="panel qr-panel">
+      <div class="qr-head">
+        <div>
+          <h2>Attendance QR Code</h2>
+          <p class="sub">Students scan it to open the attendance page. Each code is valid for 5 minutes.</p>
+        </div>
+        <button type="button" class="btn small" id="qrBtn">Generate QR Code</button>
+      </div>
+
+      <label for="qrBase">Student page address</label>
+      <input id="qrBase" type="text" placeholder="http://192.168.1.5:5000/index.html">
+      <p class="note" id="qrNote" hidden>Phones can't open "localhost" or a file. Use your computer's IP address here, for example http://192.168.1.5:5000/index.html</p>
+      <p class="qr-msg" id="qrMsg" hidden></p>
+
+      <div class="qr-body" id="qrBody" hidden>
+        <div class="qr-box" id="qrBox"></div>
+        <div class="qr-info">
+          <p class="qr-status" id="qrStatus"></p>
+          <div class="qr-bar"><span id="qrBar"></span></div>
+          <p class="sub">Show this on the screen. It stops working when the timer ends.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="toolbar">
+        <input id="search" type="search" placeholder="Search by roll number or name">
+        <input id="dateFilter" type="date" aria-label="Filter by date">
+        <button type="button" class="ghost" id="clearBtn">Clear</button>
+        <button type="button" class="btn small" id="exportBtn">Export to Excel</button>
+      </div>
+
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Roll No</th><th>Name</th><th>Date</th><th>Time</th><th>Status</th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+      <p class="msg" id="tableMsg"></p>
+    </section>
+  </div>
+
+  <script src="qrcode.min.js"></script>
+  <script src="lecturer.js"></script>
+</body>
+</html>

@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Class Attendance</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+/* ---------- Tokens ---------- */
+:root {
+  --bg: #f4f6fb;
+  --card: #ffffff;
+  --text: #121826;
+  --muted: #667085;
+  --line: #e3e7ef;
+  --primary: #4f46e5;
+  --primary-dark: #4338ca;
+  --green: #12a150;
+  --green-soft: #e7f7ee;
+  --red: #d92d20;
+  --red-soft: #fef3f2;
+  --radius: 22px;
+  --font: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  font-family: var(--font);
+  color: var(--text);
+  background: var(--bg);
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+/* ---------- Background ---------- */
+.bg { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+.blob { position: absolute; border-radius: 50%; filter: blur(70px); opacity: .45; animation: drift 18s ease-in-out infinite alternate; }
+.b1 { width: 340px; height: 340px; background: #c7d2fe; top: -80px; left: -60px; }
+.b2 { width: 300px; height: 300px; background: #bbf7d0; bottom: -90px; right: -60px; animation-delay: -6s; }
+.b3 { width: 240px; height: 240px; background: #fde68a; top: 45%; left: 55%; opacity: .3; animation-delay: -11s; }
+@keyframes drift { to { transform: translate(40px, 30px) scale(1.12); } }
+
+/* ---------- Layout ---------- */
+.wrap {
+  position: relative; z-index: 1;
+  min-height: 100vh; min-height: 100dvh;
+  display: flex; align-items: center; justify-content: center;
+  padding: max(20px, env(safe-area-inset-top)) 16px max(20px, env(safe-area-inset-bottom));
+  perspective: 1000px;
+}
+
+.card {
+  position: relative;
+  width: 100%; max-width: 440px;
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 34px 26px 28px;
+  box-shadow: 0 1px 2px rgba(16,24,40,.06), 0 24px 60px -20px rgba(55,48,163,.28);
+  overflow: hidden;
+  transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform .18s ease-out;
+  animation: rise .6s cubic-bezier(.2,.8,.2,1) both;
+}
+@keyframes rise { from { opacity: 0; transform: translateY(24px) scale(.97); } }
+
+.card.shake { animation: shake .4s; }
+@keyframes shake { 20%,60% { transform: translateX(-8px); } 40%,80% { transform: translateX(8px); } }
+
+/* progress bar across top of card */
+.progress { position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--line); }
+.progress span { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--primary), #818cf8); transition: width .4s cubic-bezier(.2,.8,.2,1); }
+.progress span.full { background: linear-gradient(90deg, var(--green), #4ade80); }
+
+/* live clock */
+.live {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: .78rem; font-weight: 600; color: var(--muted);
+  background: var(--bg); padding: 6px 12px; border-radius: 999px;
+  margin-bottom: 18px;
+}
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 0 rgba(18,161,80,.5); animation: pulse 2s infinite; }
+@keyframes pulse { 70% { box-shadow: 0 0 0 8px rgba(18,161,80,0); } 100% { box-shadow: 0 0 0 0 rgba(18,161,80,0); } }
+
+/* ---------- Text ---------- */
+h1 { font-size: 1.9rem; font-weight: 800; letter-spacing: -.03em; line-height: 1.15; }
+h2 { font-size: 1.1rem; font-weight: 600; color: var(--primary); margin-top: 6px; }
+.sub { color: var(--muted); font-size: .95rem; line-height: 1.5; margin: 10px 0 26px; }
+
+/* ---------- Form ---------- */
+.field { margin-bottom: 18px; }
+label { display: block; font-size: .88rem; font-weight: 600; margin-bottom: 8px; }
+
+.inputwrap { position: relative; }
+input {
+  width: 100%; height: 56px;
+  font: inherit; font-size: 1.05rem; color: var(--text);
+  padding: 0 46px 0 16px;
+  background: #fafbfd;
+  border: 2px solid var(--line);
+  border-radius: 14px;
+  outline: none;
+  transition: border-color .2s, box-shadow .2s, background .2s;
+}
+input::placeholder { color: #98a2b3; }
+input:focus { background: #fff; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(79,70,229,.14); }
+
+.field.valid input { border-color: var(--green); }
+.field.valid input:focus { box-shadow: 0 0 0 4px rgba(18,161,80,.14); }
+.field.invalid input { border-color: var(--red); background: var(--red-soft); }
+.field.invalid input:focus { box-shadow: 0 0 0 4px rgba(217,45,32,.14); }
+
+/* tick / cross icon inside the input */
+.tick {
+  position: absolute; right: 14px; top: 50%;
+  width: 24px; height: 24px; margin-top: -12px;
+  border-radius: 50%; display: grid; place-items: center;
+  font-size: .8rem; font-weight: 800; color: #fff;
+  transform: scale(0); transition: transform .25s cubic-bezier(.3,1.6,.5,1);
+}
+.field.valid .tick { background: var(--green); transform: scale(1); }
+.field.valid .tick::before { content: "✓"; }
+.field.invalid .tick { background: var(--red); transform: scale(1); }
+.field.invalid .tick::before { content: "!"; }
+
+.error { color: var(--red); font-size: .84rem; font-weight: 500; line-height: 1.4; max-height: 0; opacity: 0; overflow: hidden; transition: max-height .25s, opacity .25s, margin .25s; }
+.field.invalid .error, .form-error.show { max-height: 60px; opacity: 1; margin-top: 8px; }
+.form-error { margin-bottom: 12px; }
+
+/* ---------- Button ---------- */
+.btn {
+  position: relative; overflow: hidden;
+  width: 100%; height: 60px; margin-top: 8px;
+  font: inherit; font-size: 1rem; font-weight: 700; letter-spacing: .04em; color: #fff;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  border: 0; border-radius: 16px; cursor: pointer;
+  box-shadow: 0 10px 24px -8px rgba(79,70,229,.6);
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  transition: transform .15s, box-shadow .2s, opacity .2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn:hover { box-shadow: 0 14px 28px -8px rgba(79,70,229,.7); transform: translateY(-1px); }
+.btn:active { transform: scale(.98); }
+.btn:focus-visible { outline: 3px solid #a5b4fc; outline-offset: 3px; }
+.btn:disabled { cursor: not-allowed; opacity: .85; transform: none; }
+.btn .spinner { display: none; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,.35); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; }
+.btn.loading .spinner { display: block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.ripple { position: absolute; border-radius: 50%; background: rgba(255,255,255,.4); transform: scale(0); animation: ripple .6s ease-out forwards; pointer-events: none; }
+@keyframes ripple { to { transform: scale(4); opacity: 0; } }
+
+/* ---------- Success ---------- */
+.success { text-align: center; position: relative; }
+.success[hidden], #formView[hidden] { display: none; }
+.success h2 { color: var(--text); font-size: 1.4rem; font-weight: 800; letter-spacing: -.02em; margin: 8px 0 22px; }
+
+.check { width: 96px; height: 96px; margin-top: 4px; }
+.check-ring { fill: var(--green-soft); stroke: var(--green); stroke-width: 3; stroke-dasharray: 220; stroke-dashoffset: 220; animation: draw .6s .1s ease-out forwards; transform-origin: center; }
+.check-mark { fill: none; stroke: var(--green); stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 60; stroke-dashoffset: 60; animation: draw .4s .6s ease-out forwards; }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+
+.details { background: var(--bg); border-radius: 16px; padding: 6px 18px; text-align: left; }
+.details div { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 13px 0; border-bottom: 1px solid var(--line); opacity: 0; animation: slide .4s ease-out forwards; }
+.details div:last-child { border-bottom: 0; }
+.details div:nth-child(1) { animation-delay: .8s; } .details div:nth-child(2) { animation-delay: .9s; }
+.details div:nth-child(3) { animation-delay: 1s; } .details div:nth-child(4) { animation-delay: 1.1s; }
+.details div:nth-child(5) { animation-delay: 1.2s; }
+@keyframes slide { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+dt { color: var(--muted); font-size: .88rem; }
+dd { font-weight: 700; text-align: right; word-break: break-word; }
+.pill { background: var(--green-soft); color: var(--green); padding: 4px 12px; border-radius: 999px; font-size: .82rem; letter-spacing: .05em; }
+.done { color: var(--green); font-weight: 700; margin-top: 22px; opacity: 0; animation: slide .4s 1.4s ease-out forwards; }
+
+/* confetti */
+.confetti { position: absolute; top: 50px; left: 50%; width: 0; height: 0; pointer-events: none; }
+.confetti i { position: absolute; width: 8px; height: 12px; border-radius: 2px; opacity: 0; animation: pop 1.1s ease-out forwards; }
+@keyframes pop {
+  0% { opacity: 1; transform: translate(0,0) rotate(0); }
+  100% { opacity: 0; transform: translate(var(--x), var(--y)) rotate(var(--r)); }
+}
+
+/* ---------- Small screens ---------- */
+@media (max-width: 380px) {
+  .card { padding: 28px 18px 22px; }
+  h1 { font-size: 1.6rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-delay: 0s !important; transition-duration: .01ms !important; }
+  .check-ring, .check-mark { stroke-dashoffset: 0; }
+  .details div, .done { opacity: 1; }
+}
+
+</style>
+</head>
+<body>
+  <div class="bg" aria-hidden="true"><span class="blob b1"></span><span class="blob b2"></span><span class="blob b3"></span></div>
+
+  <main class="wrap">
+    <section class="card" id="card">
+      <div class="progress" aria-hidden="true"><span id="progressBar"></span></div>
+
+      <div class="live"><span class="dot"></span><span id="liveClock">--</span></div>
+
+      <!-- FORM VIEW -->
+      <div id="formView">
+        <h1>Class Attendance</h1>
+        <h2>Mark Your Attendance</h2>
+        <p class="sub">Enter your details below to mark your attendance.</p>
+
+        <form id="attendanceForm" novalidate autocomplete="off">
+          <div class="field" id="rollField">
+            <label for="roll">Roll Number</label>
+            <div class="inputwrap">
+              <input id="roll" name="roll" type="text" inputmode="numeric" placeholder="Enter your roll number" maxlength="6" aria-describedby="rollError">
+              <span class="tick" aria-hidden="true"></span>
+            </div>
+            <p class="error" id="rollError" role="alert"></p>
+          </div>
+
+          <div class="field" id="nameField">
+            <label for="name">Full Name</label>
+            <div class="inputwrap">
+              <input id="name" name="name" type="text" placeholder="Enter your full name" maxlength="60" autocapitalize="words" aria-describedby="nameError">
+              <span class="tick" aria-hidden="true"></span>
+            </div>
+            <p class="error" id="nameError" role="alert"></p>
+          </div>
+
+          <p class="error form-error" id="formError" role="alert"></p>
+
+          <button type="submit" class="btn" id="submitBtn">
+            <span class="btn-label">MARK ATTENDANCE</span>
+            <span class="spinner" aria-hidden="true"></span>
+          </button>
+        </form>
+      </div>
+
+      <!-- SUCCESS VIEW -->
+      <div id="successView" class="success" hidden>
+        <div class="confetti" id="confetti" aria-hidden="true"></div>
+        <svg class="check" viewBox="0 0 80 80" aria-hidden="true">
+          <circle class="check-ring" cx="40" cy="40" r="35"/>
+          <path class="check-mark" d="M24 41 l11 11 l22 -24"/>
+        </svg>
+        <h2>Attendance Marked Successfully</h2>
+
+        <dl class="details">
+          <div><dt>Name</dt><dd id="outName"></dd></div>
+          <div><dt>Roll Number</dt><dd id="outRoll"></dd></div>
+          <div><dt>Date</dt><dd id="outDate"></dd></div>
+          <div><dt>Time</dt><dd id="outTime"></dd></div>
+          <div><dt>Status</dt><dd><span class="pill">PRESENT</span></dd></div>
+        </dl>
+
+        <p class="done">Your attendance has been recorded.</p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+/* =========================================================
+   Class Attendance – student frontend
+   1. Helpers  2. Validation  3. Live UI  4. Submit  5. Success
+   ========================================================= */
+
+const ROLL_MIN = 1;
+const ROLL_MAX = 63;
+
+const $ = (id) => document.getElementById(id);
+const card = $("card");
+const form = $("attendanceForm");
+const rollInput = $("roll");
+const nameInput = $("name");
+const submitBtn = $("submitBtn");
+const progressBar = $("progressBar");
+
+/* ---------- 1. Helpers ---------- */
+
+const pad = (n) => String(n).padStart(2, "0");
+
+// 02/10/2026
+function formatDate(d) {
+  return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
+}
+
+// 10:42 AM
+function formatTime(d) {
+  let h = d.getHours();
+  const ampm = h >= 12 ? "PM" : "AM";
+  h = h % 12 || 12;
+  return `${pad(h)}:${pad(d.getMinutes())} ${ampm}`;
+}
+
+/* ---------- 2. Validation ---------- */
+
+function validateRoll(raw) {
+  const v = raw.trim();
+  if (!v) return { ok: false, msg: "Roll number is required." };
+  if (!/^\d+$/.test(v)) return { ok: false, msg: "Use numbers only – no letters, symbols, decimals or minus sign." };
+  const n = Number(v);
+  if (n < ROLL_MIN || n > ROLL_MAX) return { ok: false, msg: `Roll number must be between ${ROLL_MIN} and ${ROLL_MAX}.` };
+  return { ok: true, value: n };
+}
+
+function validateName(raw) {
+  const v = raw.trim().replace(/\s+/g, " "); // trim + collapse extra spaces
+  if (!v) return { ok: false, msg: "Full name is required." };
+  if (!/^\p{L}+(?: \p{L}+)*$/u.test(v)) return { ok: false, msg: "Use letters and spaces only – no numbers or symbols." };
+  if (v.length < 2) return { ok: false, msg: "Name must be at least 2 characters." };
+  return { ok: true, value: v };
+}
+
+/* ---------- 3. Live UI ---------- */
+
+// Show / clear the error state of a field
+function setField(fieldId, errorId, result) {
+  const field = $(fieldId);
+  field.classList.toggle("valid", result.ok);
+  field.classList.toggle("invalid", !result.ok);
+  $(errorId).textContent = result.ok ? "" : result.msg;
+}
+
+function clearField(fieldId, errorId) {
+  $(fieldId).classList.remove("valid", "invalid");
+  $(errorId).textContent = "";
+}
+
+// Top progress bar: 0% -> 50% -> 100% as fields become valid
+function updateProgress() {
+  const done = [validateRoll(rollInput.value).ok, validateName(nameInput.value).ok].filter(Boolean).length;
+  progressBar.style.width = `${done * 50}%`;
+  progressBar.classList.toggle("full", done === 2);
+}
+
+// Validate as the student types (only after they've started typing)
+function liveCheck(input, fieldId, errorId, validator) {
+  input.addEventListener("input", () => {
+    if (input === rollInput) input.value = input.value.replace(/\s/g, ""); // no spaces in roll
+    if (input.value.trim() === "") clearField(fieldId, errorId);
+    else setField(fieldId, errorId, validator(input.value));
+    $("formError").classList.remove("show");
+    updateProgress();
+  });
+  input.addEventListener("blur", () => {
+    if (input.value.trim() !== "") setField(fieldId, errorId, validator(input.value));
+  });
+}
+liveCheck(rollInput, "rollField", "rollError", validateRoll);
+liveCheck(nameInput, "nameField", "nameError", validateName);
+
+// Live clock in the card header
+function tickClock() {
+  const now = new Date();
+  const day = now.toLocaleDateString("en-GB", { weekday: "short", day: "2-digit", month: "short" });
+  $("liveClock").textContent = `${day}, ${formatTime(now)}`;
+}
+tickClock();
+setInterval(tickClock, 1000);
+
+// Gentle 3D tilt on desktop (mouse only)
+if (window.matchMedia("(hover: hover) and (pointer: fine)").matches &&
+    !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  document.addEventListener("pointermove", (e) => {
+    const x = e.clientX / window.innerWidth - 0.5;
+    const y = e.clientY / window.innerHeight - 0.5;
+    card.style.setProperty("--ry", `${x * 6}deg`);
+    card.style.setProperty("--rx", `${-y * 6}deg`);
+  });
+}
+
+// Button ripple
+submitBtn.addEventListener("pointerdown", (e) => {
+  const r = submitBtn.getBoundingClientRect();
+  const dot = document.createElement("span");
+  dot.className = "ripple";
+  const size = 40;
+  dot.style.cssText = `width:${size}px;height:${size}px;left:${e.clientX - r.left - size / 2}px;top:${e.clientY - r.top - size / 2}px`;
+  submitBtn.appendChild(dot);
+  setTimeout(() => dot.remove(), 600);
+});
+
+/* ---------- 4. Submit ---------- */
+
+/*
+  BACKEND-READY:
+  Replace the body of this function with a real request later, e.g.
+
+    const res = await fetch("https://your-server.com/api/attendance", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error("Server error");
+    return res.json();
+*/
+async function submitAttendance(data) {
+  console.log("Attendance payload:", data);
+  await new Promise((resolve) => setTimeout(resolve, 1200)); // simulate network delay
+  return { success: true };
+}
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const roll = validateRoll(rollInput.value);
+  const name = validateName(nameInput.value);
+  setField("rollField", "rollError", roll);
+  setField("nameField", "nameError", name);
+
+  if (!roll.ok || !name.ok) {
+    card.classList.remove("shake");
+    void card.offsetWidth; // restart animation
+    card.classList.add("shake");
+    (!roll.ok ? rollInput : nameInput).focus();
+    return;
+  }
+
+  const now = new Date();
+  const data = {
+    roll_number: roll.value,
+    name: name.value,
+    date: formatDate(now),
+    time: formatTime(now),
+    status: "PRESENT",
+  };
+
+  // loading state
+  submitBtn.disabled = true;
+  submitBtn.classList.add("loading");
+  submitBtn.querySelector(".btn-label").textContent = "MARKING...";
+  $("formError").classList.remove("show");
+
+  try {
+    await submitAttendance(data);
+    showSuccess(data);
+  } catch (err) {
+    const fe = $("formError");
+    fe.textContent = "Could not submit. Check your connection and try again.";
+    fe.classList.add("show");
+    submitBtn.disabled = false;
+    submitBtn.classList.remove("loading");
+    submitBtn.querySelector(".btn-label").textContent = "MARK ATTENDANCE";
+  }
+});
+
+/* ---------- 5. Success ---------- */
+
+function showSuccess(data) {
+  $("outName").textContent = data.name;
+  $("outRoll").textContent = data.roll_number;
+  $("outDate").textContent = data.date;
+  $("outTime").textContent = data.time;
+
+  $("formView").hidden = true;
+  $("successView").hidden = false;
+  progressBar.style.width = "100%";
+  progressBar.classList.add("full");
+  burstConfetti();
+}
+
+function burstConfetti() {
+  const box = $("confetti");
+  const colors = ["#4f46e5", "#12a150", "#f59e0b", "#818cf8", "#4ade80"];
+  for (let i = 0; i < 28; i++) {
+    const p = document.createElement("i");
+    const angle = Math.random() * Math.PI * 2;
+    const dist = 70 + Math.random() * 110;
+    p.style.background = colors[i % colors.length];
+    p.style.setProperty("--x", `${Math.cos(angle) * dist}px`);
+    p.style.setProperty("--y", `${Math.sin(angle) * dist - 20}px`);
+    p.style.setProperty("--r", `${Math.random() * 540 - 270}deg`);
+    p.style.animationDelay = `${0.45 + Math.random() * 0.15}s`;
+    box.appendChild(p);
+  }
+}
+
+</script>
+</body>
+</html>
