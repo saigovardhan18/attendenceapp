@@ -301,3 +301,39 @@ The main goal of Iteration 1 is to create a simple attendance system where:
 > **Lecturer generates QR → Student scans → Student marks attendance → Lecturer receives attendance**
 
 This provides the basic working foundation for future versions of the project.
+
+# Next Development
+
+After completing Iteration 1, the next goal is to improve the system and make it more practical for real college use.
+
+## Iteration 2
+
+The main focus will be making the attendance process more secure and reliable.
+
+### Planned Features
+
+* **QR Expiration** — The QR code will work only for a limited amount of time.
+* **Duplicate Prevention** — A student cannot mark attendance more than once in the same session.
+* **Close Attendance** — The lecturer can manually close the attendance session.
+* **Better Student Validation** — The system will validate the roll number and name before marking attendance.
+* **Improved Dashboard** — The lecturer will be able to see the number of students present and the attendance list clearly.
+
+## After Iteration 2
+
+Once the basic system is stable, the next improvements can include:
+
+* Student and lecturer login
+* Attendance history
+* Attendance percentage
+* Excel/PDF attendance reports
+* Multiple subjects and classes
+* Real-time attendance updates
+
+## Future Direction
+
+The system can later be extended beyond QR attendance with technologies such as **NFC**, mobile applications, cloud deployment, and other methods of making attendance faster and more secure.
+
+The main approach will be:
+
+> **First make the basic system work properly, then improve it step by step.**
+
