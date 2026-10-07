@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Class Attendance</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css for attendece using nft.css"></head>
+<body>
+  <div class="bg" aria-hidden="true"><span class="blob b1"></span><span class="blob b2"></span><span class="blob b3"></span></div>
+
+  <main class="wrap">
+    <section class="card" id="card">
+      <div class="progress" aria-hidden="true"><span id="progressBar"></span></div>
+
+      <div class="live"><span class="dot"></span><span id="liveClock">--</span></div>
+
+      <!-- FORM VIEW -->
+      <div id="formView">
+        <h1>Class Attendance</h1>
+        <h2>Mark Your Attendance</h2>
+        <p class="sub">Enter your details below to mark your attendance.</p>
+
+        <form id="attendanceForm" novalidate autocomplete="off">
+          <div class="field" id="rollField">
+            <label for="roll">Roll Number</label>
+            <div class="inputwrap">
+              <input id="roll" name="roll" type="text" inputmode="numeric" placeholder="Enter your roll number" maxlength="6" aria-describedby="rollError">
+              <span class="tick" aria-hidden="true"></span>
+            </div>
+            <p class="error" id="rollError" role="alert"></p>
+          </div>
+
+          <div class="field" id="nameField">
+            <label for="name">Full Name</label>
+            <div class="inputwrap">
+              <input id="name" name="name" type="text" placeholder="Enter your full name" maxlength="60" autocapitalize="words" aria-describedby="nameError">
+              <span class="tick" aria-hidden="true"></span>
+            </div>
+            <p class="error" id="nameError" role="alert"></p>
+          </div>
+
+          <p class="error form-error" id="formError" role="alert"></p>
+
+          <button type="submit" class="btn" id="submitBtn">
+            <span class="btn-label">MARK ATTENDANCE</span>
+            <span class="spinner" aria-hidden="true"></span>
+          </button>
+        </form>
+      </div>
+
+      <!-- SUCCESS VIEW -->
+      <div id="successView" class="success" hidden>
+        <div class="confetti" id="confetti" aria-hidden="true"></div>
+        <svg class="check" viewBox="0 0 80 80" aria-hidden="true">
+          <circle class="check-ring" cx="40" cy="40" r="35"/>
+          <path class="check-mark" d="M24 41 l11 11 l22 -24"/>
+        </svg>
+        <h2>Attendance Marked Successfully</h2>
+
+        <dl class="details">
+          <div><dt>Name</dt><dd id="outName"></dd></div>
+          <div><dt>Roll Number</dt><dd id="outRoll"></dd></div>
+          <div><dt>Date</dt><dd id="outDate"></dd></div>
+          <div><dt>Time</dt><dd id="outTime"></dd></div>
+          <div><dt>Status</dt><dd><span class="pill">PRESENT</span></dd></div>
+        </dl>
+
+        <p class="done">Your attendance has been recorded.</p>
+      </div>
+    </section>
+  </main>
+
+<script src="js for nft usingattendence.js"></script></body>
+</html>
